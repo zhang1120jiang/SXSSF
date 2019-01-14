@@ -23,6 +23,7 @@ public class SxssfServlet extends HttpServlet {
          System.out.println("name = "+req.getParameter("name"));
          System.out.println("age = "+req.getParameter("age"));
          sxssf.buildExcelDocument(req,resp);
+         System.out.println("这是版本2.0");
       } catch (Exception e) {
          e.printStackTrace();
       }
