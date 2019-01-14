@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/jquery-1.8.3.js"></script>
+</head>
+<body>
+    下载进度：<span id="progressing"></span>
+    <input type="button" value="下载" onclick="load()">
+    <!--<form action="sxssfServlet" method="get" id="downloadFile"></form>-->
+    <script>
+       function  submitForm(){
+           $("#downloadFile").submit();
+       }
+       function load(){
+           progressDownLoad();
+       }
+       /**
+        * 下载文件 - 带进度监控
+        * @param url: 文件请求路径
+        * @param params: 请求参数
+        * @param name: 保存的文件名
+        * @param progress: 进度处理回调函数
+        * @param success: 下载完成回调函数
+        * eg: progressDownLoad({url:'http://loacalhost:8080/downLoad.action',name:'file.rar',progress:function(evt){
+  *        console.log(evt);
+  *     }});
+        **/
+       function progress(evt){
+           console.log(evt);
+       };
+       function success(){
+           alert("下载完成");
+       }
+       function progressDownLoad(){
+           {
+               var xhr = new XMLHttpRequest();
+               xhr.open("POST", 'sxssfServlet', true);
+               //监听进度事件
+               xhr.addEventListener("progress", function (evt) {
+                   console.log("evt："+evt);
+                   console.log("loaded："+evt.loaded);
+                   console.log("total："+evt.total);
+                   try{
+                       progress.call(evt);
+                   }catch(e){}
+               }, false);
+               //监听进度事件，对下载文件可以进行百分比的显示
+               // xhr.addEventListener("progress", function (evt) {
+               //     console.log("开始了："+evt.lengthComputable);
+               //     console.log("加载："+evt.loaded);
+               //     console.log("中共："+evt.total);
+               //     if (evt.lengthComputable) {
+               //         var percentComplete = evt.loaded / evt.total;
+               //         console.log(percentComplete);
+               //         $("#progressing").html((percentComplete * 100) + "%");
+               //     }
+               // }, false);
+               xhr.responseType = "blob";
+               xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=UTF-8");
+               xhr.onreadystatechange = function () {
+                   if (xhr.readyState === 4 && xhr.status === 200) {
+                       if (typeof window.chrome !== 'undefined') {
+                           // Chrome version
+                           var link = document.createElement('a');
+                           link.href = window.URL.createObjectURL(xhr.response);
+                           link.download = '测试.xlsx';
+                           link.click();
+                       } else if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                           // IE version
+                           var blob = new Blob([xhr.response], { type: 'application/force-download' });
+                           window.navigator.msSaveBlob(blob, '测试.xlsx');
+                       } else {
+                           // Firefox version
+                           var file = new File([xhr.response],'测试.xlsx', { type: 'application/force-download' });
+                           window.open(URL.createObjectURL(file));
+                       }
+                       if(success) try{ success.call(xhr); }catch(e){}
+                   }
+               };
+               // FormData
+               //var formData = new FormData();
+               // var paramsStr = '';
+               // if(params) for (var key in params) paramsStr += '&'+key+'='+params[key];
+               // if(paramsStr) paramsStr = paramsStr.substring(1);
+
+               xhr.send("name=张三&age=18");
+           }
+       }
+    </script>
+</body>
+</html>
